@@ -14,7 +14,7 @@ Web statis (tanpa build, tanpa database) untuk menyusun **Plan Omset** dan **Pla
 5. **Simpan JSON / Muat JSON** → backup konfigurasi (mapping, edit, data). Data juga autosave di browser.
 
 ## Logika singkat
-- Hari yang sudah ada aktual terkunci. Sisa plan = Total plan − aktual − (hari yang diedit manual), dibagi ke hari kerja tersisa mengikuti pola bulan lalu (kekuatan pola bisa diatur).
+- Hari yang sudah ada aktual terkunci. Sisa plan = Total plan − aktual − (hari yang diedit manual), dibagi ke hari kerja tersisa mengikuti pola bulan lalu (kekuatan pola bisa diatur). Pasangan hari default: hari yang sama ke-N (Selasa ke-2 ↔ Selasa ke-2 bulan lalu); opsi lain: minggu kalender, hari kerja ke-N, tanggal sama.
 - Total plan: ikut target (BTI/Milestone, toggle di atas), atau growth global, atau edit manual per salesman.
 - Plan SO tgl X = plan omset tgl X+2 (jeda & cara hitung bisa diubah). Edit SO mengubah plan omset turunannya.
 - Growth = plan vs baseline bulan lalu (setelah mapping & adjustment).

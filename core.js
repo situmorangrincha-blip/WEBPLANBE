@@ -129,7 +129,7 @@ function newState() {
   return {
     v: 1, seq: 1,
     period: null, prev: null, lastDay: 0,
-    settings: { target: 'bti', basis: 'target', growth: 0.05, pattern: 0.6, offDays: [0], lag: 2, lagMode: 'cal', cmp: 'workday', autoLast: true },
+    settings: { target: 'bti', basis: 'target', growth: 0.05, pattern: 0.6, offDays: [0], lag: 2, lagMode: 'cal', cmp: 'dow', autoLast: true },
     teams: [{ id: 'arjuna', name: 'Arjuna' }, { id: 'bima', name: 'Bima' }],
     people: [], prevData: {}, curData: {}, targets: { bti: {}, ms: {} }, plan: {}
   };
@@ -189,12 +189,24 @@ function mkCal(st, per) {
 const weekOf = (c, d) => Math.floor((d - 1 + c.dow1) / 7);
 
 /* ---------- baseline ---------- */
+/* Pasangan hari bulan lalu untuk hari d bulan ini. null = tidak ada pasangan */
+function pairDay(st, c, pc, d) {
+  const mode = st.settings.cmp, info = c.days[d - 1];
+  if (mode === 'date') return d <= pc.n ? d : null;
+  if (mode === 'workday') { const k = c.work.indexOf(d); return k >= 0 && k < pc.work.length ? pc.work[k] : null; }
+  if (mode === 'week') { const w = weekOf(c, d); const x = pc.days.find(y => y.dow === info.dow && weekOf(pc, y.d) === w); return x ? x.d : null; }
+  // 'dow' (default): hari yang sama ke-N dalam bulan (Selasa ke-2 <-> Selasa ke-2)
+  const nth = c.days.filter(y => y.dow === info.dow && y.d <= d).length;
+  const cand = pc.days.filter(y => y.dow === info.dow);
+  return cand[nth - 1] ? cand[nth - 1].d : null;
+}
 function mapPrev(st, c, pc, series, d) {
-  const mean = pc.work.reduce((a, k) => a + (series[k] || 0), 0) / (pc.work.length || 1);
-  if (st.settings.cmp === 'date') return d <= pc.n ? (series[d] || 0) : mean;
-  const k = c.work.indexOf(d);
-  if (k < 0) return 0;
-  return k < pc.work.length ? (series[pc.work[k]] || 0) : mean;
+  const p = pairDay(st, c, pc, d);
+  if (p != null) return series[p] || 0;
+  const dw = c.days[d - 1].dow, by = st.settings.cmp === 'dow' || st.settings.cmp === 'week';
+  const same = pc.days.filter(y => y.dow === dw && !y.off).map(y => y.d);
+  const pool = by && same.length ? same : pc.work;
+  return pool.reduce((a, k) => a + (series[k] || 0), 0) / (pool.length || 1);
 }
 function prevSeries(st, pc, src) {
   const s = new Array(pc.n + 2).fill(0); let any = false;
@@ -373,7 +385,7 @@ function parseInput(t, ctx) {
   return ctx === 'pct' ? { type: 'pct', v: n / 100 } : { type: 'abs', v: ctx === 'signed' ? n * mult : Math.max(0, n * mult) };
 }
 
-root.Core = { MONTH_ID, DOW_ID, STATUSES, simp, norm, sameName, sheetToRows, parseOmset, parseTargets, newState, addPerson, findPerson,
+root.Core = { pairDay, MONTH_ID, DOW_ID, STATUSES, simp, norm, sameName, sheetToRows, parseOmset, parseTargets, newState, addPerson, findPerson,
   ingestOmset, ingestTargets, syncPeriod, mkCal, weekOf, compute, agg, soMap, soSeries, soState, soEdit, setDayOverride, parseInput, daysIn, dowOf };
 if (typeof module !== 'undefined') module.exports = root.Core;
 })(typeof window !== 'undefined' ? window : globalThis);

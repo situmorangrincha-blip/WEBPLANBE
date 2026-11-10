@@ -155,7 +155,8 @@ function personRow(p, c) {
     if (k === 'off') return '<td class="off"></td>';
     const v = r.plan[d], ed = k === 'plan' || k === 'edit';
     const b = r.base.day[d];
-    const tt = ed ? ` title="Pola bln lalu: ${jt(b)} jt${b > 0 ? ' · ' + pct(v / b - 1) : ''}"` : '';
+    const pdy = ed ? Core.pairDay(S, c, COMP.pc, d) : null;
+    const tt = ed ? ` title="Pasangan ${Core.MONTH_ID[S.prev.month - 1].slice(0, 3)}${pdy ? ' tgl ' + pdy + ' (' + Core.DOW_ID[COMP.pc.days[pdy - 1].dow] + ')' : ' (rata-rata)'}: ${jt(b)} jt${b > 0 ? ' · ' + pct(v / b - 1) : ''}"` : '';
     return `<td class="c ${k}"${ed ? ` data-edit="day" data-p="${p.id}" data-d="${d}" data-raw="${Math.round(v)}"` : ''}${tt}>${jt(v)}</td>`;
   }).join('');
   const gcls = r.growth != null && r.growth < 0 && p.status !== 'Resign' ? 'neg' : pcls(r.growth);
@@ -196,7 +197,7 @@ function soTable() {
   const lagTxt = S.settings.lagMode === 'work' ? `${S.settings.lag} hari kerja` : `${S.settings.lag} hari kalender (SO Minggu digeser ke Sabtu)`;
   return `<div class="legend"><span>SO tgl X menghasilkan omset tgl X+${S.settings.lag} · aturan: <b>${lagTxt}</b> (ubah di Data &amp; Setting)</span>
     <span><i style="background:var(--act)"></i>SO sudah terealisasi</span><span><i style="background:var(--edit)"></i>Sebagian terealisasi</span>
-    <span>Edit SO = ubah plan omset tanggal turunannya (tooltip sel). SO tgl terakhir → omset bulan depan, tidak tampil.</span></div>
+    <span>Pembanding SO ikut aturan pasangan hari di Setting (omset = SO + ${S.settings.lag} hari, jadi SO Senin ke-2 ↔ SO Senin ke-2 bulan lalu). Edit SO = ubah plan omset tanggal turunannya (tooltip sel). SO tgl terakhir → omset bulan depan, tidak tampil.</span></div>
   <div class="tw"><table><thead><tr><th class="nm" rowspan="2">Salesman</th><th rowspan="2">Total SO</th>${head}</tr><tr class="r2">${head2}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
@@ -253,7 +254,7 @@ function dataTab() {
     <div class="row"><label>Ikuti pola bulan lalu (%)</label><input type="number" min="0" max="100" step="5" data-set="pattern" value="${Math.round(s.pattern * 100)}" style="width:70px"> <span class="mut">0 = merata, 100 = persis pola</span></div>
     <div class="row"><label>Aktual s/d tanggal</label><input type="number" min="0" max="31" data-set="lastDay" value="${S.lastDay}" style="width:70px"> <label style="min-width:0"><input type="checkbox" data-set="autoLast" ${s.autoLast ? 'checked' : ''}> otomatis dari data</label></div>
     <div class="row"><label>Hari libur (tanpa omset)</label>${dow}</div>
-    <div class="row"><label>Pembanding growth harian</label>${sel('cmp', [['workday', 'Hari kerja ke-N'], ['date', 'Tanggal yang sama']])}</div></div>
+    <div class="row"><label>Pembanding growth harian</label>${sel('cmp', [['dow', 'Hari yang sama ke-N (Selasa ke-2 ↔ Selasa ke-2)'], ['week', 'Hari yang sama, minggu kalender ke-N (Min-Sab)'], ['workday', 'Hari kerja ke-N'], ['date', 'Tanggal yang sama']])}</div></div>
   <div class="card"><h3>Plan SO</h3>
     <div class="row"><label>Jeda SO → omset (hari)</label><input type="number" min="0" max="7" data-set="lag" value="${s.lag}" style="width:70px"></div>
     <div class="row"><label>Cara hitung jeda</label>${sel('lagMode', [['cal', 'Hari kalender (SO Minggu → Sabtu)'], ['work', 'Hari kerja']])}</div>
