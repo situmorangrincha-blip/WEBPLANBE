@@ -86,7 +86,7 @@ function parseOmset(rows) {
 
 function parseTargets(rows) {
   const out = {};
-  const isNamaArea = x => /^nama\s+area$/i.test(String(simp(x) == null ? '' : simp(x)).trim());
+  const isNamaArea = x => /^(nama(\s+(area|salesman|sales|salesmen|sm))?|salesman|area)$/i.test(String(simp(x) == null ? '' : simp(x)).trim());
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i] || [];
     for (let c = 0; c < r.length; c++) {
@@ -120,7 +120,7 @@ function parseTargets(rows) {
       out[type] = data;
     }
   }
-  if (!out.bti && !out.ms) throw new Error('Tabel "TARGET BTI" / "TARGET MILESTONE" tidak ketemu.');
+  if (!out.bti && !out.ms) throw new Error('Tabel "TARGET BTI" / "TARGET MILESTONE" tidak ketemu (judul tabel harus diawali kata TARGET BTI / TARGET MILESTONE, dan ada baris header "Nama Area" atau "Nama Salesman").');
   return out;
 }
 
